@@ -1,18 +1,18 @@
 import React from 'react';
-import Chart from 'chart.js';
+// import Chart from 'chart.js';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      initial: 'hello, world!',
     };
   }
 
-  renderChart() {
-  }
-
   render() {
-    return ();
+    return (
+      <h1>{ this.state.initial }</h1>
+    );
   }
 }
 
