@@ -72,6 +72,7 @@ class App extends React.Component {
   }
 
   render() {
+    console.log(this.state.teamsSelected);
     return (
       <div className="chartContainer">
         <h1>Points Scored in NBA By Team</h1>
@@ -81,7 +82,10 @@ class App extends React.Component {
           : <canvas ref={(node) => { this.node = node; }} />
         }
         </div>
-        <TeamSelection handleTeamChange={ this.handleTeamChange }/>
+        <TeamSelection
+          handleTeamChange={ this.handleTeamChange }
+          allTeams = { this.state.allTeams }
+        />
       </div>
     );
   }
