@@ -6,7 +6,8 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      NBAPointData: {},
+      NBAStats: {},
+      allTeams: [],
       errorFetching: false,
       graphType: 'line',
       teamsSelected: [],
@@ -47,12 +48,12 @@ class App extends React.Component {
 
   async fetchNBAData() {
     try {
-      const response = await fetch('/');
+      const response = await fetch('/pointsData');
       if (response.ok) {
-        const NBAPointData = await response.json();
+        const data = await response.json();
         this.setState({
-          NBAPointData,
-          errorFetching: false,
+          NBAStats: data.NBAStats,
+          allTeams: data.teamsAvailable,
         }, () => {
           this.renderChart();
         });
@@ -67,10 +68,10 @@ class App extends React.Component {
 
   componentDidMount() {
     this.renderChart();
+    this.fetchNBAData();
   }
 
   render() {
-    console.log(this.state.teamsSelected);
     return (
       <div className="chartContainer">
         <h1>Points Scored in NBA By Team</h1>
