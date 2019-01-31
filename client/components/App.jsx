@@ -6,21 +6,53 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      NBAStats: {},
+      NBAStats: null,
       allTeams: [],
       errorFetching: false,
       graphType: 'line',
       teamsSelected: [],
+      filteredStats: [],
     };
 
     this.handleTeamChange = this.handleTeamChange.bind(this);
     this.fetchNBAData = this.fetchNBAData.bind(this);
   }
 
+  getDateRange() {
+    const dates = new Set();
+    this.state.filteredStats.forEach((team) => {
+      let lastAdded = team.data[0].Date;
+      dates.add(lastAdded);
+      for (let i = 1; i < team.data.length; i += 1) {
+        if (team.data[i].Date !== lastAdded) {
+          lastAdded = team.data[i].Date;
+          dates.add(lastAdded);
+        }
+      }
+    });
+    return [...dates.values()].sort();
+  }
+
+  getPointsScored(team) {
+    return this.state.filteredStats[0].data.map(row => (row['Visitor/Neutral'] === team ? row.PTSVisitor : row.PTSHome));
+  }
+
   renderChart() {
+    console.log('filteredStats: ', this.state.filteredStats);
     const { node } = this;
-    const dates = null;
-    const values = null;
+    let dates = null;
+    const datasets = [];
+    if (this.state.filteredStats.length > 0) {
+      dates = this.getDateRange();
+      this.state.filteredStats.forEach((team) => {
+        datasets.push({
+          label: team.teamName,
+          data: this.getPointsScored(team.teamName),
+          fill: false,
+        });
+      });
+    }
+    console.log(datasets);
     if (window.chart) {
       window.chart.destroy();
     }
@@ -28,19 +60,26 @@ class App extends React.Component {
       type: this.state.graphType,
       data: {
         labels: dates,
-        datasets: [
-          {
-            label: 'Placeholder for team names',
-            data: values,
-          },
-        ],
+        datasets,
       },
     });
   }
 
-  handleTeamChange({ target: { value } }) {
+  filterData(lastTeamSelected) {
+    const filteredData = this.state.NBAStats.filter(row => row['Visitor/Neutral'] === lastTeamSelected
+      || row['Home/Neutral'] === lastTeamSelected);
+    return {
+      teamName: lastTeamSelected,
+      data: filteredData,
+    };
+  }
+
+  handleTeamChange({ target: { value } }) { // value = team name
     if (!this.state.teamsSelected.includes(value)) {
-      this.setState({ teamsSelected: [...this.state.teamsSelected, value] }, () => {
+      this.setState({
+        teamsSelected: [...this.state.teamsSelected, value],
+        filteredStats: [...this.state.filteredStats, this.filterData(value)],
+      }, () => {
         this.renderChart();
       });
     }
@@ -72,7 +111,6 @@ class App extends React.Component {
   }
 
   render() {
-    console.log(this.state.teamsSelected);
     return (
       <div className="chartContainer">
         <h1>Points Scored in NBA By Team</h1>
