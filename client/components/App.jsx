@@ -38,9 +38,11 @@ class App extends React.Component {
   }
 
   handleTeamChange({ target: { value } }) {
-    this.setState({ teamsSelected: [...this.state.teamsSelected, value] }, () => {
-      this.renderChart();
-    });
+    if (!this.state.teamsSelected.includes(value)) {
+      this.setState({ teamsSelected: [...this.state.teamsSelected, value] }, () => {
+        this.renderChart();
+      });
+    }
   }
 
   async fetchNBAData() {
@@ -68,6 +70,7 @@ class App extends React.Component {
   }
 
   render() {
+    console.log(this.state.teamsSelected);
     return (
       <div className="chartContainer">
         <h1>Points Scored in NBA By Team</h1>
