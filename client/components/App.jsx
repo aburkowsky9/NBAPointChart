@@ -2,6 +2,7 @@ import React from 'react';
 import Chart from 'chart.js';
 import TeamSelection from './TeamSelection.jsx';
 import GameLocationFilter from './GameLocationFilter.jsx';
+import DataInputArea from './DataInputArea.jsx';
 
 class App extends React.Component {
   constructor(props) {
@@ -22,18 +23,40 @@ class App extends React.Component {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  getAllPointsScored(gamesData, teamName) {
+  getPointsScored(gamesData, teamName) {
     // get x(date) and y(points) value for all games played by team
-    return gamesData.map(game => ({
-      x: new Date(game.Date),
-      y: game['Visitor/Neutral'] === teamName ? game.PTSVisitor : game.PTSHome,
-    }));
+    if (this.state.locationFilter === 'Both') {
+      return gamesData.map(game => ({
+        x: new Date(game.Date),
+        y: game['Visitor/Neutral'] === teamName ? game.PTSVisitor : game.PTSHome,
+      }));
+    }
+
+    if (this.state.locationFilter === 'Home') {
+      return gamesData.reduce((acc, game) => {
+        if (game['Home/Neutral'] === teamName) {
+          acc.push({
+            x: new Date(game.Date),
+            y: game.PTSHome,
+          });
+        }
+        return acc;
+      }, []);
+    }
+    // if locationFilter === 'Away'
+    return gamesData.reduce((acc, game) => {
+      if (game['Visitor/Neutral'] === teamName) {
+        acc.push({
+          x: new Date(game.Date),
+          y: game.PTSVisitor,
+        });
+      }
+      return acc;
+    }, []);
   }
 
   renderChart() {
-    console.log('filteredStats: ', this.state.filteredStats);
     const { node } = this;
-
     const datasets = [];
     if (this.state.filteredStats.length > 0) {
       this.state.filteredStats.forEach((team) => {
@@ -41,7 +64,7 @@ class App extends React.Component {
         const borderColor = `#${((1 << 24) * Math.random() | 0).toString(16)}`;
         datasets.push({
           label: team.teamName,
-          data: this.getAllPointsScored(team.data, team.teamName),
+          data: this.getPointsScored(team.data, team.teamName),
           fill: false,
           borderColor,
         });
@@ -91,6 +114,8 @@ class App extends React.Component {
     if (value !== this.state.locationFilter) {
       this.setState({
         locationFilter: value,
+      }, () => {
+        this.renderChart();
       });
     }
   }
@@ -121,7 +146,6 @@ class App extends React.Component {
   }
 
   render() {
-    console.log(this.state.locationFilter);
     return (
       <div className="chartContainer">
         <h1>Points Scored in NBA By Team</h1>
@@ -136,6 +160,7 @@ class App extends React.Component {
           allTeams = { this.state.allTeams }
         />
         <GameLocationFilter handleLocationChange={ this.handleLocationChange }/>
+        <DataInputArea />
       </div>
     );
   }
