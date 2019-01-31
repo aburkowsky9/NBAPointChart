@@ -18,49 +18,47 @@ class App extends React.Component {
     this.fetchNBAData = this.fetchNBAData.bind(this);
   }
 
-  getDateRange() {
-    const dates = new Set();
-    this.state.filteredStats.forEach((team) => {
-      let lastAdded = team.data[0].Date;
-      dates.add(lastAdded);
-      for (let i = 1; i < team.data.length; i += 1) {
-        if (team.data[i].Date !== lastAdded) {
-          lastAdded = team.data[i].Date;
-          dates.add(lastAdded);
-        }
-      }
-    });
-    return [...dates.values()].sort();
-  }
-
-  getPointsScored(team) {
-    return this.state.filteredStats[0].data.map(row => (row['Visitor/Neutral'] === team ? row.PTSVisitor : row.PTSHome));
+  // eslint-disable-next-line class-methods-use-this
+  getAllPointsScored(gamesData, teamName) {
+    // get x(date) and y(points) value for all games played by team
+    return gamesData.map(game => ({
+      x: new Date(game.Date),
+      y: game['Visitor/Neutral'] === teamName ? game.PTSVisitor : game.PTSHome,
+    }));
   }
 
   renderChart() {
     console.log('filteredStats: ', this.state.filteredStats);
     const { node } = this;
-    let dates = null;
+
     const datasets = [];
     if (this.state.filteredStats.length > 0) {
-      dates = this.getDateRange();
       this.state.filteredStats.forEach((team) => {
+        // eslint-disable-next-line no-bitwise
+        const borderColor = `#${((1 << 24) * Math.random() | 0).toString(16)}`;
         datasets.push({
           label: team.teamName,
-          data: this.getPointsScored(team.teamName),
+          data: this.getAllPointsScored(team.data, team.teamName),
           fill: false,
+          borderColor,
         });
       });
     }
-    console.log(datasets);
+
     if (window.chart) {
       window.chart.destroy();
     }
     window.chart = new Chart(node, {
       type: this.state.graphType,
       data: {
-        labels: dates,
         datasets,
+      },
+      options: {
+        scales: {
+          xAxes: [{
+            type: 'time',
+          }],
+        },
       },
     });
   }
