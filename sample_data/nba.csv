@@ -1,4 +1,4 @@
-Date,Start (ET),Visitor/Neutral,PTS,Home/Neutral,PTS,,,Attend.,Notes
+Date,Start (ET),Visitor/Neutral,PTSVisitor,Home/Neutral,PTSHome, DataType, OT?,Attend.,Notes
 10/25/16,07:30:00 PM,New York Knicks,88,Cleveland Cavaliers,117,Box Score,,20562,
 10/25/16,10:30:00 PM,San Antonio Spurs,129,Golden State Warriors,100,Box Score,,19596,
 10/25/16,10:00:00 PM,Utah Jazz,104,Portland Trail Blazers,113,Box Score,,19446,
