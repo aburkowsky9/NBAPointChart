@@ -1,6 +1,7 @@
 import React from 'react';
 import Chart from 'chart.js';
 import TeamSelection from './TeamSelection.jsx';
+import GameLocationFilter from './GameLocationFilter.jsx';
 
 class App extends React.Component {
   constructor(props) {
@@ -11,10 +12,12 @@ class App extends React.Component {
       errorFetching: false,
       graphType: 'line',
       teamsSelected: [],
-      filteredStats: [],
+      filteredStats: [], // filtered by teams selected
+      locationFilter: 'Both',
     };
 
     this.handleTeamChange = this.handleTeamChange.bind(this);
+    this.handleLocationChange = this.handleLocationChange.bind(this);
     this.fetchNBAData = this.fetchNBAData.bind(this);
   }
 
@@ -54,6 +57,7 @@ class App extends React.Component {
         datasets,
       },
       options: {
+        responsive: true,
         scales: {
           xAxes: [{
             type: 'time',
@@ -79,6 +83,14 @@ class App extends React.Component {
         filteredStats: [...this.state.filteredStats, this.filterData(value)],
       }, () => {
         this.renderChart();
+      });
+    }
+  }
+
+  handleLocationChange({ target: { value } }) {
+    if (value !== this.state.locationFilter) {
+      this.setState({
+        locationFilter: value,
       });
     }
   }
@@ -109,6 +121,7 @@ class App extends React.Component {
   }
 
   render() {
+    console.log(this.state.locationFilter);
     return (
       <div className="chartContainer">
         <h1>Points Scored in NBA By Team</h1>
@@ -122,6 +135,7 @@ class App extends React.Component {
           handleTeamChange={ this.handleTeamChange }
           allTeams = { this.state.allTeams }
         />
+        <GameLocationFilter handleLocationChange={ this.handleLocationChange }/>
       </div>
     );
   }
