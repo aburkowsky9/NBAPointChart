@@ -8,15 +8,18 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      NBAStats: null,
-      allTeams: [],
+      NBAStats: null, // data in format from fetch request
+      allTeams: [], // all Teams available
       errorFetching: false,
       graphType: 'line',
-      teamsSelected: [],
+      teamsSelected: [], // names of teams selected for plotting
       filteredStats: [], // filtered by teams selected
       locationFilter: 'Both',
+      textAreaInput: '',
     };
 
+    this.handleTextAreaInputChange = this.handleTextAreaInputChange.bind(this);
+    this.handleTextAreaSubmit = this.handleTextAreaSubmit.bind(this);
     this.handleTeamChange = this.handleTeamChange.bind(this);
     this.handleLocationChange = this.handleLocationChange.bind(this);
     this.fetchNBAData = this.fetchNBAData.bind(this);
@@ -55,11 +58,11 @@ class App extends React.Component {
     }, []);
   }
 
-  renderChart() {
+  renderChart(pointsData = this.state.filteredStats) {
     const { node } = this;
     const datasets = [];
-    if (this.state.filteredStats.length > 0) {
-      this.state.filteredStats.forEach((team) => {
+    if (pointsData.length > 0) {
+      pointsData.forEach((team) => {
         // eslint-disable-next-line no-bitwise
         const borderColor = `#${((1 << 24) * Math.random() | 0).toString(16)}`;
         datasets.push({
@@ -97,6 +100,51 @@ class App extends React.Component {
       teamName: lastTeamSelected,
       data: filteredData,
     };
+  }
+
+  parseDataInput() {
+    const labels = ['Date', 'Start(ET)', 'Visitor/Neutral', 'PTSVisitor', 'Home/Neutral', 'PTSHome', 'DataType', 'OT?', 'Attend.', 'Notes'];
+    const dataArray = this.state.textAreaInput.split('\n')
+      .map(row => row.split(','));
+    const teams = new Set();
+    const NBAStats = dataArray.reduce((acc, row) => {
+      const map = {};
+      row.forEach((val, i) => {
+        const key = labels[i];
+        if (key === 'Visitor/Neutral' || key === 'Home/Neutral') {
+          teams.add(val);
+        }
+        map[key] = val;
+      });
+      acc.push(map);
+      return acc;
+    }, []);
+
+    return {
+      NBAStats,
+      teamsAvailable: [...teams.values()].sort(),
+    };
+  }
+
+  handleTextAreaSubmit(e) {
+    e.preventDefault();
+    const formattedData = this.parseDataInput();
+    this.setState({
+      NBAStats: formattedData.NBAStats,
+      allTeams: formattedData.teamsAvailable,
+      // reset chart values
+      teamsSelected: [],
+      filteredStats: [],
+      textAreaInput: '',
+    }, () => {
+      this.renderChart(); // reset chart
+    });
+  }
+
+  handleTextAreaInputChange({ target: { value } }) {
+    this.setState({
+      textAreaInput: value,
+    });
   }
 
   handleTeamChange({ target: { value } }) { // value = team name
@@ -160,7 +208,11 @@ class App extends React.Component {
           allTeams = { this.state.allTeams }
         />
         <GameLocationFilter handleLocationChange={ this.handleLocationChange }/>
-        <DataInputArea />
+        <DataInputArea
+          handleTextAreaInputChange={ this.handleTextAreaInputChange }
+          handleTextAreaSubmit={ this.handleTextAreaSubmit }
+          textAreaInput={ this.state.textAreaInput }
+          />
       </div>
     );
   }

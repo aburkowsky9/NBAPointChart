@@ -1,0 +1,19 @@
+h1 {
+  text-align: center;
+}
+
+.chartContainer {
+  width: 80%;
+  margin: 8px auto;
+}
+
+.chart {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+textarea {
+  width: 60%;
+  height: 100px;
+}
