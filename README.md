@@ -27,6 +27,11 @@ Start Server (nodemon):
 ```
 npm start
 ```
+Go to Dev Site: 
+```
+localhost:3000
+````
+
 ## API-Documentation
 
 | Description | Method | Endpoint |
